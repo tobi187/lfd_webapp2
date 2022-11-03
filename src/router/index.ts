@@ -1,3 +1,4 @@
+import MainView from '@/views/MainView.vue'
 import StartView from '@/views/StartView.vue'
 import { createRouter, createWebHistory } from 'vue-router'
 
@@ -7,7 +8,12 @@ const router = createRouter({
     {
       path: '/',
       name: 'start',
-      component: StartView
+      component: StartView,
+    },
+    {
+      path: '/main/:job/:current_file',
+      name: 'main',
+      component: MainView,
     },
     {
       path: '/about',
@@ -15,9 +21,9 @@ const router = createRouter({
       // route level code-splitting
       // this generates a separate chunk (About.[hash].js) for this route
       // which is lazy-loaded when the route is visited.
-      component: () => import('../views/AboutView.vue')
-    }
-  ]
+      component: () => import('../views/AboutView.vue'),
+    },
+  ],
 })
 
 export default router
