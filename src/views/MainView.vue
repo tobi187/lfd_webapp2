@@ -1,6 +1,30 @@
 <script setup lang="ts">
+import AccordionMain from '@/components/AccordionMain.vue'
+import PointItem from '@/components/PointItem.vue'
 import { onMounted, ref } from 'vue'
 import { useRoute } from 'vue-router'
+
+export type LfdParts = {
+  abschnitt: string
+  text: string
+  teile: OverPoint[]
+}
+
+export type OverPoint = {
+  ueberbegriff: string
+  points: LfdEntry[]
+}
+
+export type LfdEntry = {
+  lfd: string
+  text: string
+}
+
+export type UserPoint = {
+  index: number
+  value: string
+  lfd: string
+}
 
 const fileId = ref<string>()
 const jobName = ref<string>()
@@ -29,33 +53,31 @@ async function getData() {
     }),
   })
   const data = await response.json()
-  console.log(data)
   userEntry.value = data.points as UserPoint[]
   lfdIhkData.value = data.data as LfdParts[]
   console.log(userEntry.value)
   console.log(lfdIhkData.value)
 }
 
-type UserPoint = {
-  index: number
-  value: string
-  lfd: string
-}
-
-type LfdParts = {
-  abschnitt: string
-  text: string
-  teile: LfdEntry[]
-}
-
-type LfdEntry = {
-  lfd: string
-  text: string
-}
 </script>
 
 <template>
-
+  <div class="grid grid-cols-2 gap-4">
+    <div>
+      <div>
+        <ul>
+          <li v-for="p in userEntry">
+            <PointItem :point="p" />
+          </li>
+        </ul>
+      </div>
+    </div>
+    <div>
+      <div class="flex justify-center align-middle" v-for="ov in lfdIhkData">
+        <AccordionMain :job-data="ov" />
+      </div>
+    </div>
+  </div>
 </template>
 
 <style>
