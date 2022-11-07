@@ -1,86 +1,76 @@
 <script setup lang="ts">
 import AccordionMain from '@/components/AccordionMain.vue'
 import PointItem from '@/components/PointItem.vue'
+import type { LfdParts, UserPoint } from '@/models/lfdModels'
+import { getData, sendPointData, dlLink } from '@/models/apiLogic'
 import { onMounted, ref } from 'vue'
-import { useRoute } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 
-export type LfdParts = {
-  abschnitt: string
-  text: string
-  teile: OverPoint[]
-}
-
-export type OverPoint = {
-  ueberbegriff: string
-  points: LfdEntry[]
-}
-
-export type LfdEntry = {
-  lfd: string
-  text: string
-}
-
-export type UserPoint = {
-  index: number
-  value: string
-  lfd: string
-}
-
+const router = useRouter()
+const routeValues = useRoute()
 const fileId = ref<string>()
 const jobName = ref<string>()
-const routeValues = useRoute()
-
+const original_name = ref<string>()
 const lfdIhkData = ref<LfdParts[] | null>()
 const userEntry = ref<UserPoint[] | null>()
+const currentPointIndex = ref(0)
 
 onMounted(async () => {
   fileId.value = routeValues.params.current_file as string
   jobName.value = routeValues.params.job as string
-
-  await getData()
+  original_name.value = routeValues.params.original_name as string
+  ;[userEntry.value, lfdIhkData.value] = await getData(
+    jobName.value,
+    fileId.value
+  )
 })
 
-async function getData() {
-  const response = await fetch('http://localhost:5000/api/v1/get-info', {
-    method: 'POST',
-    headers: {
-      Accept: 'application/json',
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({
-      job: jobName.value,
-      name: fileId.value,
-    }),
-  })
-  const data = await response.json()
-  userEntry.value = data.points as UserPoint[]
-  lfdIhkData.value = data.data as LfdParts[]
-  console.log(userEntry.value)
-  console.log(lfdIhkData.value)
+const onPointSubmit = (lfdPoint: string) => {
+  userEntry.value![currentPointIndex.value].lfd = lfdPoint
+  currentPointIndex.value = userEntry.value?.findIndex((el) => !el.lfd) ?? -1
 }
 
+const onDataSubmit = async () => {
+  const fileName = await sendPointData(userEntry.value!, fileId.value!)
+  if (fileName) {
+    const link = dlLink(fileName, original_name.value!)
+    router.push({
+      name: 'start',
+      params: {
+        dl: link,
+      },
+    })
+  }
+}
 </script>
 
 <template>
-  <div class="grid grid-cols-2 gap-4">
-    <div>
+  <div class="p-20">
+    <div class="flex justify-center p-5">
+      <h1>{{ original_name }} ausfüllen</h1>
+    </div>
+    <div class="flex flex-row p-10 gap-24">
       <div>
         <ul>
           <li v-for="p in userEntry">
-            <PointItem :point="p" />
+            <PointItem
+              :point="p"
+              :current-index="currentPointIndex"
+              @change-index="(i) => (currentPointIndex = i)"
+            />
           </li>
         </ul>
       </div>
-    </div>
-    <div>
-      <div class="flex justify-center align-middle" v-for="ov in lfdIhkData">
-        <AccordionMain :job-data="ov" />
+      <div class="w-1/2">
+        <div class="" v-for="ov in lfdIhkData">
+          <AccordionMain :job-data="ov" @on-chosen="onPointSubmit" />
+        </div>
       </div>
+    </div>
+    <div class="flex justify-center">
+      <button @click="onDataSubmit">Absenden</button>
     </div>
   </div>
 </template>
 
-<style>
-
-</style>
-
+<style></style>

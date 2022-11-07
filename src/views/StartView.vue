@@ -1,17 +1,26 @@
 <script setup lang="ts">
 import { onMounted, ref } from 'vue'
-import { useRouter } from 'vue-router'
+import { useRouter, useRoute } from 'vue-router'
+import { getJobs, sendInputFile } from '@/models/apiLogic'
+import type { Job } from '@/models/lfdModels'
 
 const file_data = ref<File | null>()
 const dropDownValues = ref<Job[]>()
 const selectedValue = ref<Job | null>()
 
 const router = useRouter()
+const routeValues = useRoute()
 
 onMounted(async () => {
-  const result = await fetch('http://localhost:5000/api/v1/init')
-  const data = await result.json()
-  dropDownValues.value = data.jobs as Array<Job>
+  dropDownValues.value = await getJobs()
+
+  if (routeValues.params.dl) {
+    const link = document.createElement('a')
+    link.href = routeValues.params.dl as string
+    link.download = 'berichtheft.docx'
+    link.click()
+    document.body.removeChild(link)
+  }
 })
 
 function onFileChange(event: Event) {
@@ -21,66 +30,23 @@ function onFileChange(event: Event) {
   }
 }
 
-const toBase64 = (file: File) =>
-  new Promise((resolve, reject) => {
-    const reader = new FileReader()
-    reader.readAsDataURL(file)
-    reader.onload = () => {
-      const res = reader.result as string
-      if (res) {
-        const data = res.replace('data', '').replace(/^.+,/, '')
-        resolve(data)
-      }
-    }
-    reader.onerror = (error) => reject(error)
-  })
-
 async function sendData() {
   if (file_data.value && selectedValue.value) {
-    try {
-      const fileBytes = await toBase64(file_data.value)
-      const result = await fetch('http://localhost:5000/api/v1/upload', {
-        method: 'POST',
-        headers: {
-          'Accept': 'application/json',
-          'Content-Type': 'application/json',
+    const response = await sendInputFile(file_data.value)
+
+    if (response) {
+      router.push({
+        name: 'main',
+        params: {
+          job: selectedValue.value?.internal,
+          current_file: response.name,
+          original_name: file_data.value?.name.split('.')[0],
         },
-        body: JSON.stringify({
-          fileName: file_data.value.name,
-          wordData: fileBytes,
-        }),
       })
-      nextAction(await result.json())
-    } catch (error) {
-      console.log(error)
+    } else {
+      console.log('Response: ' + response)
     }
   }
-}
-
-function nextAction(res: Object) {
-  const response = res as ApiResponse
-
-  if (response && response.status == 200) {
-    router.push({
-      name: 'main',
-      params: {
-        job: selectedValue.value?.internal,
-        current_file: response.name,
-      },
-    })
-  } else {
-    console.log('wtf is going on' + response.status + ' | ' + response.name)
-  }
-}
-
-type Job = {
-  internal: string
-  display: string
-}
-
-type ApiResponse = {
-  status: number
-  name: string
 }
 </script>
 
