@@ -1,15 +1,15 @@
 <script setup lang="ts">
-import type { LfdEntry } from '@/models/lfdModels'
+import type { LfdEntry } from "@/models/lfdModels";
 
 const emit = defineEmits<{
-  (e: 'chosen', lfdNum: string): void
-}>()
+  (e: "chosen", lfdNum: string): void;
+}>();
 
-const passValue = () => emit('chosen', props.lfd_data.lfd)
+const passValue = () => emit("chosen", props.lfd_data.lfd);
 
 const props = defineProps<{
-  lfd_data: LfdEntry
-}>()
+  lfd_data: LfdEntry;
+}>();
 </script>
 
 <template>

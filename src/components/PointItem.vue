@@ -1,16 +1,16 @@
 <script setup lang="ts">
-import type { UserPoint } from '@/models/lfdModels'
+import type { UserPoint } from "@/models/lfdModels";
 
 const props = defineProps<{
-  point: UserPoint
-  currentIndex: number
-}>()
+  point: UserPoint;
+  currentIndex: number;
+}>();
 
 const emit = defineEmits<{
-  (e: 'changeIndex', index: number): void
-}>()
+  (e: "changeIndex", index: number): void;
+}>();
 
-const onIndexChange = () => emit('changeIndex', props.point.index)
+const onIndexChange = () => emit("changeIndex", props.point.index);
 </script>
 
 <template>
