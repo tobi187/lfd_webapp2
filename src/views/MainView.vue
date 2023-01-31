@@ -53,33 +53,25 @@ const onDataSubmit = async () => {
       </h1>
     </div>
     <div class="p-5 flex justify-center">
-      <input
-        v-model="searchValue"
-        type="text"
-        placeholder="Suchen..."
-        class="border p-2 bg-pink-600"
-      />
+      <input v-model="searchValue" type="text" placeholder="Suchen..." class="border p-2 bg-pink-600" />
     </div>
 
     <div class="flex flex-row p-10 gap-24">
       <div>
         <ul>
           <li v-for="p in userEntry" v-bind:key="p.index">
-            <PointItem
-              :point="p"
-              :current-index="currentPointIndex"
-              @change-index="(i) => (currentPointIndex = i)"
-            />
+            <PointItem :point="p" :current-index="currentPointIndex" @change-index="(i) => (currentPointIndex = i)" />
           </li>
         </ul>
       </div>
       <div class="w-1/2">
+        <div class="p-2 border rounded-lg bg-slate-200">
+          <div class="flex justify-center" @click="onPointSubmit('-')">
+            <span class="text-xl">-</span>
+          </div>
+        </div>
         <div v-for="(ov, index) in lfdIhkData" v-bind:key="index">
-          <AccordionMain
-            :job-data="ov"
-            :search-value="searchValue.toLocaleLowerCase()"
-            @on-chosen="onPointSubmit"
-          />
+          <AccordionMain :job-data="ov" :search-value="searchValue.toLocaleLowerCase()" @on-chosen="onPointSubmit" />
         </div>
       </div>
     </div>
@@ -89,4 +81,6 @@ const onDataSubmit = async () => {
   </div>
 </template>
 
-<style></style>
+<style>
+
+</style>
